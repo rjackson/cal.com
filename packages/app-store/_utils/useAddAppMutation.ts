@@ -1,5 +1,6 @@
 import type { UseMutationOptions } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/router";
 
 import type { IntegrationOAuthCallbackState } from "@calcom/app-store/types";
 import { WEBAPP_URL } from "@calcom/lib/constants";
@@ -7,19 +8,17 @@ import type { App } from "@calcom/types/App";
 
 import getInstalledAppPath from "./getInstalledAppPath";
 
-function gotoUrl(url: string, newTab?: boolean) {
-  if (newTab) {
-    window.open(url, "_blank");
-    return;
-  }
-  window.location.href = url;
-}
-
 type CustomUseMutationOptions =
   | Omit<UseMutationOptions<unknown, unknown, unknown, unknown>, "mutationKey" | "mutationFn" | "onSuccess">
   | undefined;
 
-type AddAppMutationData = { setupPending: boolean } | void;
+type AddAppMutationData = {
+  url: string;
+  newTab: boolean;
+  setupPending: boolean;
+  isOmniInstall: boolean;
+  externalUrl: boolean;
+} | void;
 type UseAddAppMutationOptions = CustomUseMutationOptions & {
   onSuccess?: (data: AddAppMutationData) => void;
   installGoogleVideo?: boolean;
@@ -28,6 +27,7 @@ type UseAddAppMutationOptions = CustomUseMutationOptions & {
 
 function useAddAppMutation(_type: App["type"] | null, allOptions?: UseAddAppMutationOptions) {
   const { returnTo, ...options } = allOptions || {};
+  const router = useRouter();
   const mutation = useMutation<
     AddAppMutationData,
     Error,
@@ -68,26 +68,37 @@ function useAddAppMutation(_type: App["type"] | null, allOptions?: UseAddAppMuta
       throw new Error(errorBody.message || "Something went wrong");
     }
 
-    const json = await res.json();
-    const externalUrl = /https?:\/\//.test(json.url) && !json.url.startsWith(window.location.origin);
+    const { url, newTab } = await res.json();
+    const externalUrl = /https?:\/\//.test(url) && !url.startsWith(window.location.origin);
+    const setupPending = externalUrl || url.endsWith("/setup");
 
-    if (!isOmniInstall) {
-      gotoUrl(json.url, json.newTab);
-      return { setupPending: externalUrl || json.url.endsWith("/setup") };
-    }
+    return { url, newTab, setupPending, isOmniInstall: !!isOmniInstall, externalUrl };
+  }, options);
+
+  if (mutation.data !== undefined && mutation.data.setupPending) {
+    const { url, newTab, isOmniInstall, externalUrl } = mutation.data;
 
     // Skip redirection only if it is an OmniInstall and redirect URL isn't of some other origin
     // This allows installation of apps like Stripe to still redirect to their authentication pages.
-
-    // Check first that the URL is absolute, then check that it is of different origin from the current.
-    if (externalUrl) {
-      // TODO: For Omni installation to authenticate and come back to the page where installation was initiated, some changes need to be done in all apps' add callbacks
-      gotoUrl(json.url, json.newTab);
-      return { setupPending: externalUrl };
+    if (isOmniInstall && !externalUrl) {
+      return mutation;
     }
 
-    return { setupPending: externalUrl || json.url.endsWith("/setup") };
-  }, options);
+    // If we have an external url (e.g. Stripe), redirect via window
+    if (externalUrl) {
+      if (newTab) {
+        window.open(url, "_blank");
+        return;
+      }
+
+      window.location.href = url;
+
+      return mutation;
+    }
+
+    // If we're down here, we have a local set up page
+    router.push(url);
+  }
 
   return mutation;
 }
