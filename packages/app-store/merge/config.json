@@ -1,0 +1,20 @@
+{
+  "/*": "Don't modify slug - If required, do it using cli edit command",
+  "name": "Merge",
+  "slug": "merge",
+  "type": "merge_other",
+  "logo": "icon.svg",
+  "url": "https://example.com/link",
+  "variant": "other",
+  "categories": [
+    "other"
+  ],
+  "publisher": "Cal.com",
+  "email": "support@cal.com",
+  "description": "Merge is an integration platform for Customer Relationship Management systems or Applicant Tracking Systems. Using Merge, you can automatically enter anybody who books a meeting with you as a contact or candidate in external systems.",
+  "isTemplate": false,
+  "__createdUsingCli": true,
+  "__template": "basic",
+  "imageSrc": "icon.svg",
+  "dirName": "merge"
+}
