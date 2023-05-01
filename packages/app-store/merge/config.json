@@ -2,7 +2,7 @@
   "/*": "Don't modify slug - If required, do it using cli edit command",
   "name": "Merge",
   "slug": "merge",
-  "type": "merge_other",
+  "type": "merge_other_calendar",
   "logo": "icon.svg",
   "url": "https://example.com/link",
   "variant": "other",

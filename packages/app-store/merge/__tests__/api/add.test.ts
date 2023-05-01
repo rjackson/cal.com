@@ -81,7 +81,7 @@ describe("api/add", () => {
     expect(mockLinkedAccountsList).toHaveBeenCalled();
     expect(prismaMock.credential.create).toHaveBeenCalledWith({
       data: {
-        type: "merge_other",
+        type: "merge_other_calendar",
         key: expect.any(String),
         userId: 123,
         appId: "merge",
