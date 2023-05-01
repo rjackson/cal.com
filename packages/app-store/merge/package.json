@@ -4,11 +4,20 @@
   "name": "@calcom/merge",
   "version": "0.0.0",
   "main": "./index.ts",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
   "dependencies": {
-    "@calcom/lib": "*"
+    "@calcom/lib": "*",
+    "@mergeapi/merge-sdk-typescript": "^3.0.10"
   },
   "devDependencies": {
-    "@calcom/types": "*"
+    "@calcom/types": "*",
+    "@types/jest": "^28.1.7",
+    "jest": "^28.1.0",
+    "node-mocks-http": "^1.12.2",
+    "ts-jest": "^28.0.8"
   },
   "description": "Merge is an integration platform for Customer Relationship Management systems or Applicant Tracking Systems. Using Merge, you can automatically enter anybody who books a meeting with you as a contact or candidate in external systems."
 }

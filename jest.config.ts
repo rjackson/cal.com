@@ -69,6 +69,19 @@ const config: Config = {
       transformIgnorePatterns: ["/node_modules/", "^.+\\.module\\.(css|sass|scss)$"],
       testEnvironment: "jsdom",
     },
+    // Issue: Cannot include Merge tests in overall test suite. Run via `yarn workspace @calcom/merge test`
+    // (ts-)jest throws errors relating to prismaMock type circular dependencies, inability to load json modules,
+    // and after fixing all that the json files still come though as undefined.
+    // {
+    //   displayName: "@calcom/merge",
+    //   roots: ["<rootDir>/packages/app-store/merge"],
+    //   testMatch: ["**/test/lib/**/*.(spec|test).(ts|tsx|js)", "**/__tests__/**/*.(spec|test).(ts|tsx|js)"],
+    //   transform: {
+    //     "^.+\\.ts?$": "ts-jest",
+    //   },
+    //   transformIgnorePatterns: ["/node_modules/", "^.+\\.module\\.(css|sass|scss)$"],
+    //   testEnvironment: "jsdom",
+    // },
     {
       displayName: "@calcom/features",
       roots: ["<rootDir>/packages/features"],
