@@ -27,9 +27,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         throw Error("Missing encryption keys");
       }
 
+      const encrypted = symmetricEncrypt(
+        JSON.stringify({ apiKey, accountToken }),
+        process.env.CALENDSO_ENCRYPTION_KEY
+      );
+
       const data = {
         type: appConfig.type,
-        key: symmetricEncrypt(JSON.stringify({ apiKey, accountToken }), process.env.CALENDSO_ENCRYPTION_KEY),
+        key: { encrypted },
         userId: user.id,
         appId: appConfig.slug,
         invalid: false,

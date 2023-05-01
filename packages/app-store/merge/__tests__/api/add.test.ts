@@ -86,7 +86,7 @@ describe("api/add", () => {
     expect(prismaMock.credential.create).toHaveBeenCalledWith({
       data: {
         type: "merge_other_calendar",
-        key: expect.any(String),
+        key: { encrypted: expect.any(String) },
         userId: 123,
         appId: "merge",
         invalid: false,
