@@ -47,6 +47,7 @@ test.describe("Merge app", () => {
       });
 
       await page.fill('[data-testid="access-key-input"]', "invalid-api-credential");
+      await page.fill('[data-testid="account-token-input"]', "invalid-account-token");
       await page.click('[data-testid="save-button"]');
 
       await expect(page.locator(`text=Could not add Merge app`)).toBeVisible();
@@ -60,6 +61,7 @@ test.describe("Merge app", () => {
       });
 
       await page.fill('[data-testid="access-key-input"]', "valid-api-credentials");
+      await page.fill('[data-testid="account-token-input"]', "valid-account-token");
       await page.click('[data-testid="save-button"]');
 
       await page.waitForURL("/apps/installed/other?hl=merge");

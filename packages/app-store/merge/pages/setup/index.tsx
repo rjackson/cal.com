@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
 
-import { APP_NAME } from "@calcom/lib/constants";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { Alert, Button, Form, PasswordField } from "@calcom/ui";
 
@@ -17,11 +16,16 @@ export default function MergeSetup() {
 
   const form = useForm<{
     apiKey: string;
+    accountToken: string;
   }>({
     resolver: zodResolver(appKeysSchema),
   });
-
   const [errorMessage, setErrorMessage] = useState("");
+
+  // TODO: Would be nice to give the user a list of accounts to select from.
+  // Unfortunately haven't been able to figure it out myself (spent a lot of
+  // time in that rabbithole, but abandoned due to API issues and useQuery
+  // being slow to react to apiKey changes)
 
   return (
     <div className="bg-emphasis flex h-screen">
@@ -35,16 +39,6 @@ export default function MergeSetup() {
             <h1 className="text-default">{t("merge_app_connect")}</h1>
 
             <div className="mt-1 text-sm">
-              <p>
-                {t("merge_app_generate_access_key", { appName: APP_NAME })}{" "}
-                <a
-                  className="text-indigo-400"
-                  href="https://app.merge.dev/keys"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  https://app.merge.dev/keys
-                </a>
-              </p>
               <p>{t("credentials_stored_encrypted")}</p>
             </div>
             <div className="my-2 mt-3">
@@ -71,7 +65,39 @@ export default function MergeSetup() {
                     required
                     {...form.register("apiKey")}
                     label={t("merge_app_api_key")}
+                    hint={
+                      <span>
+                        {t("merge_app_api_key_description")}{" "}
+                        <a
+                          className="text-indigo-400"
+                          href="https://app.merge.dev/keys"
+                          target="_blank"
+                          rel="noopener noreferrer">
+                          https://app.merge.dev/keys
+                        </a>
+                      </span>
+                    }
                     data-testid="access-key-input"
+                    autoComplete="off"
+                  />
+                  <PasswordField
+                    required
+                    {...form.register("accountToken")}
+                    label={t("merge_app_account_token")}
+                    hint={
+                      <span>
+                        {t("merge_app_account_token_description")}{" "}
+                        <a
+                          className="text-indigo-400"
+                          href="https://app.merge.dev/linked-accounts/accounts"
+                          target="_blank"
+                          rel="noopener noreferrer">
+                          https://app.merge.dev/linked-accounts/accounts
+                        </a>
+                      </span>
+                    }
+                    data-testid="account-token-input"
+                    autoComplete="off"
                   />
                 </fieldset>
 

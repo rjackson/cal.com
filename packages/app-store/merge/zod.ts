@@ -4,4 +4,5 @@ export const appDataSchema = z.object({});
 
 export const appKeysSchema = z.object({
   apiKey: z.string().min(1),
+  accountToken: z.string().min(1),
 });

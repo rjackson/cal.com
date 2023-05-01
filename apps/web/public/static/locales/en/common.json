@@ -1802,6 +1802,8 @@
   "error_collecting_card": "Error collecting card",
   "image_size_limit_exceed": "Uploaded image shouldn't exceed 5mb size limit",
   "merge_app_connect": "Connect with Merge.dev",
-  "merge_app_generate_access_key": "Find your API keys to use with {{appName}} at",
-  "merge_app_api_key": "Access Key"
+  "merge_app_api_key": "Access Key",
+  "merge_app_api_key_description": "You can find your access keys at:",
+  "merge_app_account_token": "Account Token",
+  "merge_app_account_token_description": "The account token for the linked account you'll like us to keep in sync. You can find this from the relevant linked account page from your link accounts list:"
 }

@@ -11,7 +11,7 @@ import { appKeysSchema } from "../zod";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
-    const { apiKey } = appKeysSchema.parse(req.body);
+    const { apiKey, accountToken } = appKeysSchema.parse(req.body);
     // Get user
     const user = await prisma.user.findFirstOrThrow({
       where: {
@@ -29,15 +29,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const data = {
         type: appConfig.type,
-        key: symmetricEncrypt(JSON.stringify({ apiKey }), process.env.CALENDSO_ENCRYPTION_KEY),
+        key: symmetricEncrypt(JSON.stringify({ apiKey, accountToken }), process.env.CALENDSO_ENCRYPTION_KEY),
         userId: user.id,
         appId: appConfig.slug,
         invalid: false,
       };
 
       // Validate the api key by listing accounts
-      const linkedAccountsApi = new ATS.LinkedAccountsApi(new Configuration({ apiKey: apiKey }));
-      await linkedAccountsApi.linkedAccountsList({});
+      const linkedAccountsApi = new ATS.AccountDetailsApi(
+        new Configuration({ apiKey, accessToken: accountToken })
+      );
+      await linkedAccountsApi.accountDetailsRetrieve();
 
       await prisma.credential.create({
         data,

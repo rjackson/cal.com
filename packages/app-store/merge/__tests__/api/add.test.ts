@@ -9,12 +9,12 @@ import { add as handleAdd } from "../../api";
 type ApiRequest = NextApiRequest & ReturnType<typeof createRequest>;
 type ApiResponse = NextApiResponse & ReturnType<typeof createResponse>;
 
-const mockLinkedAccountsList = jest.fn();
+const mockAccountDetailsRetrieve = jest.fn();
 
 jest.mock("@mergeapi/merge-sdk-typescript", () => ({
   ATS: {
-    LinkedAccountsApi: jest.fn().mockImplementation(() => ({
-      linkedAccountsList: mockLinkedAccountsList,
+    AccountDetailsApi: jest.fn().mockImplementation(() => ({
+      accountDetailsRetrieve: mockAccountDetailsRetrieve,
     })),
   },
   Configuration: jest.fn(),
@@ -41,11 +41,14 @@ describe("api/add", () => {
       method: "POST",
       body: {
         apiKey: "invalid-api-key",
+        accountToken: "invalid-account-token",
       },
     });
 
     prismaMock.user.findFirstOrThrow.mockResolvedValue({ id: 123 } as PrismaUser);
-    mockLinkedAccountsList.mockRejectedValue(new Error("Your credentials are bad and you should feel bad"));
+    mockAccountDetailsRetrieve.mockRejectedValue(
+      new Error("Your credentials are bad and you should feel bad")
+    );
 
     await handleAdd(req, res);
 
@@ -55,7 +58,7 @@ describe("api/add", () => {
         message: "Could not add Merge app",
       })
     );
-    expect(mockLinkedAccountsList).toHaveBeenCalled();
+    expect(mockAccountDetailsRetrieve).toHaveBeenCalled();
     expect(prismaMock.credential.create).not.toHaveBeenCalled();
   });
 
@@ -64,11 +67,12 @@ describe("api/add", () => {
       method: "POST",
       body: {
         apiKey: "valid-api-key",
+        accountToken: "valid-account-token",
       },
     });
 
     prismaMock.user.findFirstOrThrow.mockResolvedValue({ id: 123 } as PrismaUser);
-    mockLinkedAccountsList.mockResolvedValue([]);
+    mockAccountDetailsRetrieve.mockResolvedValue({});
 
     await handleAdd(req, res);
 
@@ -78,7 +82,7 @@ describe("api/add", () => {
         url: "/apps/installed/other?hl=merge",
       })
     );
-    expect(mockLinkedAccountsList).toHaveBeenCalled();
+    expect(mockAccountDetailsRetrieve).toHaveBeenCalled();
     expect(prismaMock.credential.create).toHaveBeenCalledWith({
       data: {
         type: "merge_other_calendar",
