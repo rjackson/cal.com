@@ -1818,5 +1818,11 @@
   "disable_attendees_confirmation_emails": "Disable default confirmation emails for attendees",
   "disable_attendees_confirmation_emails_description": "At least one workflow is active on this event type that sends an email to the attendees when the event is booked.",
   "disable_host_confirmation_emails": "Disable default confirmation emails for host",
-  "disable_host_confirmation_emails_description": "At least one workflow is active on this event type that sends an email to the host when the event is booked."
+  "disable_host_confirmation_emails_description": "At least one workflow is active on this event type that sends an email to the host when the event is booked.",
+  "file-upload-amazon-s3_api-key": "S3 API Key",
+  "file-upload-amazon-s3_bucket": "S3 Bucket",
+  "file-upload-amazon-s3_endpoint_toggle": "Set a custom S3 compatible endpoint",
+  "file-upload-amazon-s3_endpoint_toggle_description": "You may want to set a custom endpoint if you're using another storage provider instead of Amazon S3.",
+  "file-upload-amazon-s3_endpoint": "Custom endpoint",
+  "file-upload-amazon-s3_endpoint_description": "Double check your storage provider's documentation for the correct endpoint."
 }
