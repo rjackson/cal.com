@@ -1,5 +1,5 @@
 {
-  "name": "File Upload Amazon S3",
+  "name": "File Upload (Amazon S3)",
   "slug": "file-upload-amazon-s3",
   "type": "file-upload-amazon-s3_other",
   "logo": "icon.svg",
