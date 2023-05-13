@@ -21,6 +21,9 @@ export const AppSettingsComponentsMap = {
 };
 export const EventTypeAddonMap = {
   fathom: dynamic(() => import("./fathom/components/EventTypeAppCardInterface")),
+  "file-upload-amazon-s3": dynamic(() =>
+    import("./file-upload-amazon-s3/components/EventTypeAppCardInterface")
+  ),
   ga4: dynamic(() => import("./ga4/components/EventTypeAppCardInterface")),
   giphy: dynamic(() => import("./giphy/components/EventTypeAppCardInterface")),
   gtm: dynamic(() => import("./gtm/components/EventTypeAppCardInterface")),

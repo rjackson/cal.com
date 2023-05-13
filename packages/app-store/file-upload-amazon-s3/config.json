@@ -1,0 +1,20 @@
+{
+  "name": "File Upload Amazon S3",
+  "slug": "file-upload-amazon-s3",
+  "type": "file-upload-amazon-s3_other",
+  "logo": "icon.svg",
+  "url": "https://cal.com/apps/file-upload-amazon-s3",
+  "variant": "other",
+  "categories": [
+    "other"
+  ],
+  "publisher": "Cal.com, Inc.",
+  "email": "support@cal.com",
+  "description": "Ask users to upload a file while booking which will be added to your Amazon S3 Bucket",
+  "extendsFeature": "EventType",
+  "isTemplate": false,
+  "__createdUsingCli": true,
+  "imageSrc": "icon.svg",
+  "__template": "event-type-app-card",
+  "dirName": "file-upload-amazon-s3"
+}
