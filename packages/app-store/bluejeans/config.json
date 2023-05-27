@@ -1,0 +1,20 @@
+{
+  "/*": "Don't modify slug - If required, do it using cli edit command",
+  "name": "BlueJeans",
+  "slug": "bluejeans",
+  "type": "bluejeans_video",
+  "logo": "icon.svg",
+  "url": "https://example.com/link",
+  "variant": "conferencing",
+  "categories": [
+    "video"
+  ],
+  "publisher": "Rob Jackson",
+  "email": "rob@rjackson.me",
+  "description": "BlueJeans Meetings transforms your video conferencing experience by integrating the industry’s highest-fidelity audio and video performance with incredible productivity features and a comprehensive security toolkit to provide you with a distinct competitive advantage every time you join a virtual meeting.",
+  "isTemplate": false,
+  "__createdUsingCli": true,
+  "__template": "basic",
+  "imageSrc": "icon.svg",
+  "dirName": "bluejeans"
+}

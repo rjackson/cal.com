@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "private": true,
+  "name": "@calcom/bluejeans",
+  "version": "0.0.0",
+  "main": "./index.ts",
+  "dependencies": {
+    "@calcom/lib": "*"
+  },
+  "devDependencies": {
+    "@calcom/types": "*"
+  },
+  "description": "BlueJeans Meetings transforms your video conferencing experience by integrating the industry’s highest-fidelity audio and video performance with incredible productivity features and a comprehensive security toolkit to provide you with a distinct competitive advantage every time you join a virtual meeting."
+}
