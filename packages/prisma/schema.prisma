@@ -117,6 +117,7 @@ model EventType {
   @@unique([userId, parentId])
   @@index([userId])
   @@index([teamId])
+  @@index([parentId])
 }
 
 model Credential {
