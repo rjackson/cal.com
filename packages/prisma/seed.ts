@@ -1,173 +1,14 @@
-import type { Prisma, UserPermissionRole } from "@prisma/client";
 import { uuid } from "short-uuid";
 
 import dailyMeta from "@calcom/app-store/dailyvideo/_metadata";
 import googleMeetMeta from "@calcom/app-store/googlevideo/_metadata";
 import zoomMeta from "@calcom/app-store/zoomvideo/_metadata";
 import dayjs from "@calcom/dayjs";
-import { hashPassword } from "@calcom/features/auth/lib/hashPassword";
-import { DEFAULT_SCHEDULE, getAvailabilityFromSchedule } from "@calcom/lib/availability";
-import { BookingStatus, MembershipRole } from "@calcom/prisma/enums";
+import { BookingStatus } from "@calcom/prisma/enums";
 
 import prisma from ".";
 import mainAppStore from "./seed-app-store";
-
-async function createUserAndEventType(opts: {
-  user: {
-    email: string;
-    password: string;
-    username: string;
-    name: string;
-    completedOnboarding?: boolean;
-    timeZone?: string;
-    role?: UserPermissionRole;
-  };
-  eventTypes: Array<
-    Prisma.EventTypeCreateInput & {
-      _bookings?: Prisma.BookingCreateInput[];
-    }
-  >;
-}) {
-  const userData = {
-    ...opts.user,
-    password: await hashPassword(opts.user.password),
-    emailVerified: new Date(),
-    completedOnboarding: opts.user.completedOnboarding ?? true,
-    locale: "en",
-    schedules:
-      opts.user.completedOnboarding ?? true
-        ? {
-            create: {
-              name: "Working Hours",
-              availability: {
-                createMany: {
-                  data: getAvailabilityFromSchedule(DEFAULT_SCHEDULE),
-                },
-              },
-            },
-          }
-        : undefined,
-  };
-
-  const user = await prisma.user.upsert({
-    where: { email: opts.user.email },
-    update: userData,
-    create: userData,
-  });
-
-  console.log(
-    `👤 Upserted '${opts.user.username}' with email "${opts.user.email}" & password "${opts.user.password}". Booking page 👉 ${process.env.NEXT_PUBLIC_WEBAPP_URL}/${opts.user.username}`
-  );
-
-  for (const eventTypeInput of opts.eventTypes) {
-    const { _bookings: bookingFields = [], ...eventTypeData } = eventTypeInput;
-    eventTypeData.userId = user.id;
-    eventTypeData.users = { connect: { id: user.id } };
-
-    const eventType = await prisma.eventType.findFirst({
-      where: {
-        slug: eventTypeData.slug,
-        users: {
-          some: {
-            id: eventTypeData.userId,
-          },
-        },
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (eventType) {
-      console.log(
-        `\t📆 Event type ${eventTypeData.slug} already seems seeded - ${process.env.NEXT_PUBLIC_WEBAPP_URL}/${user.username}/${eventTypeData.slug}`
-      );
-      continue;
-    }
-    const { id } = await prisma.eventType.create({
-      data: eventTypeData,
-    });
-
-    console.log(
-      `\t📆 Event type ${eventTypeData.slug} with id ${id}, length ${eventTypeData.length}min - ${process.env.NEXT_PUBLIC_WEBAPP_URL}/${user.username}/${eventTypeData.slug}`
-    );
-    for (const bookingInput of bookingFields) {
-      await prisma.booking.create({
-        data: {
-          ...bookingInput,
-          user: {
-            connect: {
-              email: opts.user.email,
-            },
-          },
-          attendees: {
-            create: {
-              email: opts.user.email,
-              name: opts.user.name,
-              timeZone: "Europe/London",
-            },
-          },
-          eventType: {
-            connect: {
-              id,
-            },
-          },
-          status: bookingInput.status,
-        },
-      });
-      console.log(
-        `\t\t☎️ Created booking ${bookingInput.title} at ${new Date(
-          bookingInput.startTime
-        ).toLocaleDateString()}`
-      );
-    }
-  }
-
-  return user;
-}
-
-async function createTeamAndAddUsers(
-  teamInput: Prisma.TeamCreateInput,
-  users: { id: number; username: string; role?: MembershipRole }[]
-) {
-  const createTeam = async (team: Prisma.TeamCreateInput) => {
-    try {
-      return await prisma.team.create({
-        data: {
-          ...team,
-        },
-      });
-    } catch (_err) {
-      if (_err instanceof Error && _err.message.indexOf("Unique constraint failed on the fields") !== -1) {
-        console.log(`Team '${team.name}' already exists, skipping.`);
-        return;
-      }
-      throw _err;
-    }
-  };
-
-  const team = await createTeam(teamInput);
-  if (!team) {
-    return;
-  }
-
-  console.log(
-    `🏢 Created team '${teamInput.name}' - ${process.env.NEXT_PUBLIC_WEBAPP_URL}/team/${team.slug}`
-  );
-
-  for (const user of users) {
-    const { role = MembershipRole.OWNER, id, username } = user;
-    await prisma.membership.create({
-      data: {
-        teamId: team.id,
-        userId: id,
-        role: role,
-        accepted: true,
-      },
-    });
-    console.log(`\t👤 Added '${teamInput.name}' membership for '${username}' with role '${role}'`);
-  }
-}
+import { createTeamAndAddUsers, createUserAndEventType } from "./seed-utils";
 
 async function main() {
   await createUserAndEventType({
@@ -494,7 +335,7 @@ async function main() {
     ],
   });
 
-  const freeUserTeam = await createUserAndEventType({
+  const [freeUserTeam] = await createUserAndEventType({
     user: {
       email: "teamfree@example.com",
       password: "teamfree",
@@ -504,7 +345,7 @@ async function main() {
     eventTypes: [],
   });
 
-  const proUserTeam = await createUserAndEventType({
+  const [proUserTeam] = await createUserAndEventType({
     user: {
       email: "teampro@example.com",
       password: "teampro",
@@ -526,7 +367,7 @@ async function main() {
     eventTypes: [],
   });
 
-  const pro2UserTeam = await createUserAndEventType({
+  const [pro2UserTeam] = await createUserAndEventType({
     user: {
       email: "teampro2@example.com",
       password: "teampro2",
@@ -536,7 +377,7 @@ async function main() {
     eventTypes: [],
   });
 
-  const pro3UserTeam = await createUserAndEventType({
+  const [pro3UserTeam] = await createUserAndEventType({
     user: {
       email: "teampro3@example.com",
       password: "teampro3",
@@ -546,7 +387,7 @@ async function main() {
     eventTypes: [],
   });
 
-  const pro4UserTeam = await createUserAndEventType({
+  const [pro4UserTeam] = await createUserAndEventType({
     user: {
       email: "teampro4@example.com",
       password: "teampro4",
