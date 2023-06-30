@@ -70,20 +70,23 @@ const GeneralQueryView = () => {
 const GeneralView = ({ localeProp, user }: GeneralViewProps) => {
   const router = useRouter();
   const utils = trpc.useContext();
-  const { t } = useLocale();
+  const { t, i18n } = useLocale();
 
   const mutation = trpc.viewer.updateProfile.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       // Invalidate our previous i18n cache
       await utils.viewer.public.i18n.invalidate();
+      await router.replace(router.pathname, router.pathname, { locale: data.locale });
+      await i18n.changeLanguage(data.locale);
       reset(getValues());
       showToast(t("settings_updated_successfully"), "success");
     },
     onError: () => {
       showToast(t("error_updating_settings"), "error");
     },
-    onSettled: async () => {
+    onSettled: async (data) => {
       await utils.viewer.public.i18n.invalidate();
+      // await i18n.changeLanguage(data.locale);
     },
   });
 

@@ -1,6 +1,8 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { User } from "@prisma/client";
 import { Trans } from "next-i18next";
+import { useTranslation } from "next-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import type { FC } from "react";
@@ -129,7 +131,7 @@ const MobileTeamsTab: FC<MobileTeamsTabProps> = (props) => {
 };
 
 const Item = ({ type, group, readOnly }: { type: EventType; group: EventTypeGroup; readOnly: boolean }) => {
-  const { t } = useLocale();
+  const { t } = useTranslation();
 
   const content = () => (
     <div>
@@ -834,7 +836,7 @@ const SetupProfileBanner = ({ closeAction }: { closeAction: () => void }) => {
 };
 
 const EventTypesPage = () => {
-  const { t } = useLocale();
+  const { t, isLocaleReady } = useLocale();
   const router = useRouter();
   const { open } = useIntercom();
   const { query } = router;
@@ -862,6 +864,10 @@ const EventTypesPage = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const WithQuery = withQuery(trpc.viewer.eventTypes.getByViewer as any, filters && { filters });
+
+  if (!isLocaleReady) {
+    return null;
+  }
 
   return (
     <div>
@@ -937,3 +943,11 @@ const EventTypesPage = () => {
 EventTypesPage.PageWrapper = PageWrapper;
 
 export default EventTypesPage;
+
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? "en", ["common"])),
+    },
+  };
+};

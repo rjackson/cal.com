@@ -1,13 +1,12 @@
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { SessionProvider } from "next-auth/react";
 import { EventCollectionProvider } from "next-collect/client";
-import type { SSRConfig } from "next-i18next";
 import { appWithTranslation } from "next-i18next";
 import { ThemeProvider } from "next-themes";
-import type { AppProps as NextAppProps, AppProps as NextJsAppProps } from "next/app";
+import type { AppProps as NextAppProps } from "next/app";
 import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
-import type { ComponentProps, PropsWithChildren, ReactNode } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 
 import { OrgBrandingProvider } from "@calcom/features/ee/organizations/context/provider";
 import { useOrgBrandingValues } from "@calcom/features/ee/organizations/hooks";
@@ -21,11 +20,9 @@ import { MetaProvider } from "@calcom/ui";
 import usePublicPage from "@lib/hooks/usePublicPage";
 import type { WithNonceProps } from "@lib/withNonce";
 
-import { useViewerI18n } from "@components/I18nLanguageHandler";
+import nextI18NextConfig from "../next-i18next.config";
 
-const I18nextAdapter = appWithTranslation<NextJsAppProps<SSRConfig> & { children: React.ReactNode }>(
-  ({ children }) => <>{children}</>
-);
+const I18nextAdapter = appWithTranslation(({ children }) => <>{children}</>, nextI18NextConfig);
 
 // Workaround for https://github.com/vercel/next.js/issues/8592
 export type AppProps = Omit<
@@ -46,26 +43,6 @@ export type AppProps = Omit<
 
 type AppPropsWithChildren = AppProps & {
   children: ReactNode;
-};
-
-const CustomI18nextProvider = (props: AppPropsWithChildren) => {
-  /**
-   * i18n should never be clubbed with other queries, so that it's caching can be managed independently.
-   * We intend to not cache i18n query
-   **/
-  const { i18n, locale } = useViewerI18n().data ?? {
-    locale: "en",
-  };
-
-  const passedProps = {
-    ...props,
-    pageProps: {
-      ...props.pageProps,
-      ...i18n,
-    },
-    router: locale ? { locale } : props.router,
-  } as unknown as ComponentProps<typeof I18nextAdapter>;
-  return <I18nextAdapter {...passedProps} />;
 };
 
 const enum ThemeSupport {
@@ -220,7 +197,7 @@ const AppProviders = (props: AppPropsWithChildren) => {
   const RemainingProviders = (
     <EventCollectionProvider options={{ apiPath: "/api/collect-events" }}>
       <SessionProvider session={session || undefined}>
-        <CustomI18nextProvider {...props}>
+        <I18nextAdapter>
           <TooltipProvider>
             {/* color-scheme makes background:transparent not work which is required by embed. We need to ensure next-theme adds color-scheme to `body` instead of `html`(https://github.com/pacocoursey/next-themes/blob/main/src/index.tsx#L74). Once that's done we can enable color-scheme support */}
             <CalcomThemeProvider
@@ -235,7 +212,7 @@ const AppProviders = (props: AppPropsWithChildren) => {
               </FeatureFlagsProvider>
             </CalcomThemeProvider>
           </TooltipProvider>
-        </CustomI18nextProvider>
+        </I18nextAdapter>
       </SessionProvider>
     </EventCollectionProvider>
   );
