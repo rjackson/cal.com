@@ -18,5 +18,6 @@ export const getHandler = ({ ctx, input }: GetOptions) => {
     userId: ctx.user.id,
     prisma: ctx.prisma,
     isTrpcCall: true,
+    decryptAppVaults: input.decryptAppVaults, // In _router.ts this handler is restricted to event owners only
   });
 };

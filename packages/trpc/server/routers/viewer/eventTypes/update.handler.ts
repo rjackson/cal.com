@@ -5,6 +5,7 @@ import type { NextApiResponse, GetServerSidePropsContext } from "next";
 import { stripeDataSchema } from "@calcom/app-store/stripepayment/lib/server";
 import updateChildrenEventTypes from "@calcom/features/ee/managed-event-types/lib/handleChildrenEventTypes";
 import { validateIntervalLimitOrder } from "@calcom/lib";
+import { symmetricEncrypt } from "@calcom/lib/crypto";
 import logger from "@calcom/lib/logger";
 import { getTranslation } from "@calcom/lib/server";
 import { validateBookerLayouts } from "@calcom/lib/validateBookerLayouts";
@@ -258,6 +259,37 @@ export const updateHandler = async ({ ctx, input }: UpdateOptions) => {
       const { default_currency } = stripeDataSchema.parse(paymentCredential.key);
       data.currency = default_currency;
     }
+  }
+
+  // Encrypt any app metadata vaults on save
+  const encryptionKey = process.env.CALENDSO_ENCRYPTION_KEY;
+  if (input.metadata?.apps && encryptionKey) {
+    const newAppsEntries = Object.entries(input.metadata.apps).map(([key, appMetadata]) => {
+      if (appMetadata?.__vault === undefined) {
+        return [key, appMetadata];
+      }
+
+      const { decrypted } = appMetadata.__vault;
+      const encryptedEntries = Object.entries(decrypted).map(([key, value]) => {
+        return [key, symmetricEncrypt(value as string, encryptionKey)];
+      });
+      const encrypted = Object.fromEntries(encryptedEntries);
+      return [
+        key,
+        {
+          ...appMetadata,
+          __vault: {
+            // 'decrypted' is intentionally omitted
+            encrypted,
+          },
+        },
+      ];
+    });
+    const newApps = Object.fromEntries(newAppsEntries);
+    data.metadata = {
+      ...(typeof data.metadata === "object" ? data.metadata : {}),
+      apps: newApps,
+    };
   }
 
   const connectedLink = await ctx.prisma.hashedLink.findFirst({

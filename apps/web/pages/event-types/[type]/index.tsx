@@ -521,7 +521,7 @@ const EventTypePage = (props: EventTypeSetupProps) => {
 };
 
 const EventTypePageWrapper = (props: inferSSRProps<typeof getServerSideProps>) => {
-  const { data } = trpc.viewer.eventTypes.get.useQuery({ id: props.type });
+  const { data } = trpc.viewer.eventTypes.get.useQuery({ id: props.type, decryptAppVaults: true });
 
   return <EventTypePage {...(data as EventTypeSetupProps)} />;
 };
@@ -549,7 +549,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     };
   }
 
-  await ssr.viewer.eventTypes.get.prefetch({ id: typeParam });
+  await ssr.viewer.eventTypes.get.prefetch({ id: typeParam, decryptAppVaults: true });
   return {
     props: {
       type: typeParam,

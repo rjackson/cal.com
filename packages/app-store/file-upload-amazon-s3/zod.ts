@@ -1,13 +1,21 @@
+import type { ZodRawShape } from "zod";
 import { z } from "zod";
 
 import { eventTypeAppCardZod } from "@calcom/app-store/eventTypeAppCardZod";
 
+const vaultObject = (shape: ZodRawShape) => {
+  return z
+    .object({
+      decrypted: z.object(shape).optional(),
+      encrypted: z.object(shape).optional(),
+    })
+    .optional();
+};
+
 export const appDataSchema = eventTypeAppCardZod.merge(
   z.object({
-    // TODO: Add capability to encrypt and exclude keys from frontend (at the moment, all app data is exposed to frontend)
-    // Maybe appKeys, but they're shared globally instead of per eventType?
-    apiKey: z.string(),
-    bucket: z.string(),
+    __vault: vaultObject({ apiKey: z.string() }),
+    bucket: z.string().min(1),
     endpoint: z.string().optional(),
   })
 );

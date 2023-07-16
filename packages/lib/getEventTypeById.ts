@@ -8,6 +8,7 @@ import { getBookingFieldsWithSystemFields } from "@calcom/features/bookings/lib/
 import { parseBookingLimit, parseDurationLimit, parseRecurringEvent } from "@calcom/lib";
 import getEnabledApps from "@calcom/lib/apps/getEnabledApps";
 import { CAL_URL } from "@calcom/lib/constants";
+import { symmetricDecrypt } from "@calcom/lib/crypto";
 import getPaymentAppData from "@calcom/lib/getPaymentAppData";
 import { getTranslation } from "@calcom/lib/server/i18n";
 import { SchedulingType, MembershipRole } from "@calcom/prisma/enums";
@@ -24,6 +25,7 @@ interface getEventTypeByIdProps {
     Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
   >;
   isTrpcCall?: boolean;
+  decryptAppVaults?: boolean;
 }
 
 export default async function getEventTypeById({
@@ -31,6 +33,7 @@ export default async function getEventTypeById({
   userId,
   prisma,
   isTrpcCall = false,
+  decryptAppVaults = false,
 }: getEventTypeByIdProps) {
   const userSelect = Prisma.validator<Prisma.UserSelect>()({
     name: true,
@@ -258,6 +261,32 @@ export default async function getEventTypeById({
     },
     giphy: getEventTypeAppData(eventTypeWithParsedMetadata, "giphy", true),
   };
+
+  const encryptionKey = process.env.CALENDSO_ENCRYPTION_KEY;
+  if (decryptAppVaults && encryptionKey) {
+    const newAppsEntries = Object.entries(newMetadata.apps).map(([key, appMetadata]) => {
+      if (appMetadata?.__vault === undefined) {
+        return [key, appMetadata];
+      }
+
+      const { encrypted } = appMetadata.__vault;
+      const decryptedEntries = Object.entries(encrypted).map(([key, value]) => {
+        return [key, symmetricDecrypt(value as string, encryptionKey)];
+      });
+      const decrypted = Object.fromEntries(decryptedEntries);
+      return [
+        key,
+        {
+          ...appMetadata,
+          __vault: {
+            encrypted,
+            decrypted,
+          },
+        },
+      ];
+    });
+    newMetadata.apps = Object.fromEntries(newAppsEntries);
+  }
 
   // TODO: How to extract metadata schema from _EventTypeModel to be able to parse it?
   // const parsedMetaData = _EventTypeModel.parse(newMetadata);

@@ -16,13 +16,27 @@ const EventTypeAppCard: EventTypeAppCardComponent = function EventTypeAppCard({ 
   const endpoint = getAppData("endpoint");
   const [customEndpointToggle, setCustomEndpointToggle] = useState(!!endpoint);
 
+  const vault = getAppData("__vault") ?? { decrypted: {} };
+  const getVaultData = (key: string) => {
+    return vault?.decrypted?.[key];
+  };
+  const setVaultData = (key: string, value: string) => {
+    setAppData("__vault", {
+      ...vault,
+      decrypted: {
+        ...vault.decrypted,
+        [key]: value,
+      },
+    });
+  };
+
   return (
     <AppCard setAppData={setAppData} app={app} switchOnClick={(e) => setEnabled(e)} switchChecked={enabled}>
       <div className="space-y-4">
         <PasswordField
           name={t("file-upload-amazon-s3_api-key")}
-          value={getAppData("apiKey")}
-          onChange={(e) => setAppData("apiKey", e.target.value)}
+          value={getVaultData("apiKey")}
+          onChange={(e) => setVaultData("apiKey", e.target.value)}
         />
         <TextField
           name={t("file-upload-amazon-s3_bucket")}
